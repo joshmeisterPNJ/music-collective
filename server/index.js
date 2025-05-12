@@ -1,5 +1,5 @@
 // server/index.js
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import pg from 'pg';
@@ -11,15 +11,19 @@ import process from 'process';
 import nodemailer from 'nodemailer';
 import sanitizeHtml from 'sanitize-html';
 
+// Load environment variables from server/.env – runs before anything
+// touches process.env so pg and nodemailer receive proper values.
+dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT) || 587,
   secure: process.env.SMTP_SECURE === 'true',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
+  auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
 });
+
+// ── Uploads ─────────────────────────────────────────────────────────
+
 
 const { Pool } = pg;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -32,6 +36,9 @@ app.use(express.json());
 const uploadDir = path.join(process.cwd(), 'uploads');
 const upload = multer({ dest: uploadDir });
 app.use('/uploads', express.static(uploadDir));
+
+dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
+
 
 // ── Auth middleware ─────────────────────────────────────────
 function authenticateJWT(req, res, next) {
@@ -771,7 +778,12 @@ app.delete('/api/admins/:id',
   });
 
 
-const port = process.env.PORT || 3001;
-app.listen(port, () => {
-  console.log(`🚀 Server running on http://localhost:${port}`);
-});
+  if (process.env.NODE_ENV !== 'test') {
+    const port = process.env.PORT || 3001;
+    app.listen(port, () => {
+      console.log(`🚀 Server running on http://localhost:${port}`);
+    });
+  }
+  
+  export default app;
+  
