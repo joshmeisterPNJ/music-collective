@@ -1,0 +1,69 @@
+/* LoginPage.css */
+.login-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1e1e1e 0%, #242424 100%);
+  }
+  
+  .login-card {
+    width: min(420px, 92%);
+    padding: 2rem 2.5rem;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  }
+  
+  .login-card h1 {
+    margin: 0 0 1.25rem;
+    font-size: 2rem;
+    text-align: center;
+    color: #213547;
+  }
+  
+  .login-card label {
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+  }
+  
+  .login-card input {
+    padding: 0.65rem 1rem;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+  
+  .login-card input:focus {
+    outline: none;
+    border-color: #535bf2;
+    box-shadow: 0 0 0 2px rgba(83, 91, 242, 0.25);
+  }
+  
+  .login-card button[type='submit'] {
+    margin-top: 0.5rem;
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    background: #535bf2;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .login-card button:hover {
+    background: #3f48d3;
+  }
+  
+  .error {
+    color: #d32f2f;
+    margin-bottom: 0.8rem;
+    text-align: center;
+  }
+  

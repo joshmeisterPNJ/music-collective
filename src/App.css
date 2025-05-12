@@ -1,0 +1,30 @@
+/* app.css */
+/* — App-wide styles such as Navbar — */
+
+nav {
+  position: sticky;
+  top: 0;
+  background-color: #242424;
+  z-index: 1000;
+}
+
+nav ul {
+  display: flex;
+  list-style: none;
+  padding: 10px;
+  justify-content: space-around;
+  margin: 0;
+}
+
+nav li {
+  margin: 0;
+}
+
+nav a {
+  color: #fff;
+  font-size: 1.2rem;
+  text-decoration: none;
+}
+nav a:hover {
+  color: #535bf2;
+}
