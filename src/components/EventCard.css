@@ -1,0 +1,44 @@
+/* eventcard.css */
+/* — Styles for the EventCard component only — */
+
+.event-card {
+    display: flex;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #fff;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  
+  .event-card-image {
+    flex-shrink: 0;
+  }
+  .event-card-image img {
+    width: 200px;
+    height: 150px;
+    object-fit: cover;
+    display: block;
+  }
+  
+  .event-card-info {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+  }
+  .event-card-info h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+  }
+  .event-card-info .event-date {
+    font-size: 1rem;
+    color: #666;
+  }
+  .event-card-info .event-description {
+    font-size: 1rem;
+    color: #777;
+    line-height: 1.4;
+  }
+  
