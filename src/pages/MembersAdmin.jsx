@@ -1,6 +1,6 @@
 // src/pages/MembersAdmin.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { API_BASE_URL } from '../config';
@@ -8,37 +8,42 @@ import { useAuth } from '../AuthContext';
 import './MembersAdmin.css';
 
 export default function MembersAdmin() {
-  const { user } = useAuth();
-  const { id: paramId } = useParams();            // /admin/members/:id
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  // ─── Hooks (always run) ──────────────────────────────────────
+  const { user } = useAuth();                                              // auth info :contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}
+  const { id: paramId } = useParams();                                     // URL param
+  const navigate = useNavigate();                                          // imperative nav
+  const queryClient = useQueryClient();                                    // react-query cache
   const isSuper = user.role === 'superadmin';
   const isOwn   = paramId === String(user.id);
   const editId  = isSuper && !isOwn && paramId ? paramId : user.id;
 
-  // Fetch members list for super-admin
-  const { data: members = [], isFetching: listFetching } = useQuery({
+  // fetch full list when super-editing someone else
+  const {
+    data: members = [],
+    isFetching: listFetching,
+  } = useQuery({
     queryKey: ['members'],
-    queryFn: () => axios.get(`${API_BASE_URL}/api/members`).then(r => r.data),
+    queryFn: () =>
+      axios.get(`${API_BASE_URL}/api/members`).then(r => r.data),
     enabled: isSuper && !isOwn,
   });
 
-  // Fetch single member data
-  const { data: single, 
-    isFetching: memberLoading ,
-    error: memberError
+  // fetch the single-member record to edit
+  const {
+    data: single,
+    isFetching: memberLoading,
+    error: memberError,
   } = useQuery({
     queryKey: ['member', editId],
-    queryFn: () => 
+    queryFn: () =>
       axios.get(`${API_BASE_URL}/api/members/${editId}`)
            .then(r => r.data),
     enabled: !!editId,
   });
 
-
-  // Form state
+  // local state for form & messages
   const [message, setMessage] = useState(null);
-  const [form, setForm] = useState({
+  const [form, setForm]     = useState({
     name: '',
     role: '',
     genres: '',
@@ -58,7 +63,37 @@ export default function MembersAdmin() {
     spotify_embeds:    ['', '', ''],
   });
 
-  // Populate form when single member data arrives
+  // mutation: save member
+  const saveMember = useMutation({
+    mutationFn: formData =>
+      axios.put(
+        `${API_BASE_URL}/api/members/${editId}`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      ),
+    onSuccess: () => {
+      setMessage('Member updated!');
+      queryClient.invalidateQueries({ queryKey: ['members'] });
+      queryClient.invalidateQueries({ queryKey: ['member', editId] });
+    },
+    onError: err => {
+      setMessage(err.response?.data?.error || 'Error updating member');
+    },
+  });
+
+  // mutation: delete member (super only)
+  const deleteMember = useMutation({
+    mutationFn: id =>
+      axios.delete(`${API_BASE_URL}/api/members/${id}`),
+    onSuccess: () => {
+      setMessage('Member deleted');
+      queryClient.invalidateQueries({ queryKey: ['members'] });
+      navigate('/admin/members');
+    },
+    onError: () => setMessage('Delete failed'),
+  });
+
+  // populate form when data loads
   useEffect(() => {
     if (single) {
       setForm({
@@ -83,51 +118,34 @@ export default function MembersAdmin() {
     }
   }, [single]);
 
-  // Mutations
-  const saveMember = useMutation({
-    mutationFn: data =>
-      axios.put(
-        `${API_BASE_URL}/api/members/${editId}`,
-        data,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['members']);
-      queryClient.invalidateQueries(['member', editId]);
-      navigate(`/members/${editId}`); // public profile after save
-      setMessage('Profile updated!');
-    },
-    onError: () => setMessage('Error updating member'),
-  });
+  // ─── Conditional redirect for deleted profiles ─────────────────
+  if (memberError?.response?.status === 404) {
+    return <Navigate to="/account-archived" replace />;
+  }
 
-  const deleteMember = useMutation({
-    mutationFn: id => axios.delete(`${API_BASE_URL}/api/members/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['members']);
-      setMessage('Deleted');
-    },
-    onError: () => setMessage('Error deleting member'),
-  });
+  // ─── Loading states ──────────────────────────────────────────
+  if (isSuper && !isOwn && listFetching) return <p>Loading members…</p>;
+  if ((!isSuper || isOwn) && memberLoading) return <p>Loading member…</p>;
 
-  // Handlers
-  const handleChange = e =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-  const handleFileChange = e =>
-    setForm({ ...form, photo: e.target.files[0] });
-  const handlePortfolioFiles = e =>
-    setForm({ ...form, portfolio_images: [...e.target.files] });
-  const handleEmbedChange = (platform, idx, value) => {
-    const key = platform === 'sc' ? 'soundcloud_embeds' : 'spotify_embeds';
-    const arr = [...form[key]];
-    arr[idx] = value;
-    setForm({ ...form, [key]: arr });
+  // ─── Handlers ───────────────────────────────────────────────
+  const handleChange = e => {
+    const { name, value } = e.target;
+    setForm(f => ({ ...f, [name]: value }));
+  };
+
+  const handleFileChange = e => {
+    setForm(f => ({ ...f, photo: e.target.files[0] }));
+  };
+
+  const handlePortfolioFiles = e => {
+    setForm(f => ({ ...f, portfolio_images: Array.from(e.target.files) }));
   };
 
   const handleSubmit = e => {
     e.preventDefault();
     setMessage(null);
-
     const fd = new FormData();
+
     Object.entries(form).forEach(([k, v]) => {
       if (k === 'photo' && v) {
         fd.append('photo', v);
@@ -139,21 +157,16 @@ export default function MembersAdmin() {
         fd.append(k, v);
       }
     });
+
     saveMember.mutate(fd);
-  };
+  };  // :contentReference[oaicite:2]{index=2}:contentReference[oaicite:3]{index=3}
 
   const startEdit = m => navigate(`/admin/members/${m.id}`);
   const handleDelete = id => {
     if (confirm('Delete this member?')) deleteMember.mutate(id);
   };
 
-  // Loading states
-  if (isSuper && !isOwn && listFetching) return <p>Loading members…</p>;
-  if ((!isSuper || isOwn) && memberLoading)     return <p>Loading member…</p>;
-  if (memberError?.response?.status === 404) {
-    return <Navigate to="/account-archived" replace />;
-  }
-
+  // ─── Render ─────────────────────────────────────────────────
   const baseFields = [
     ['name', 'Name'],
     ['role', 'Artist Role'],
@@ -178,10 +191,16 @@ export default function MembersAdmin() {
           <ul>
             {members.map(m => (
               <li key={m.id}>
-                <span>{m.name} — {m.role} ({m.city}, {m.country})</span>
+                <span>
+                  {m.name} — {m.role} ({m.city}, {m.country})
+                </span>
                 <div className="admin-actions">
                   <button onClick={() => startEdit(m)}>Edit</button>
-                  {isSuper && <button onClick={() => handleDelete(m.id)}>Delete</button>}
+                  {isSuper && (
+                    <button onClick={() => handleDelete(m.id)}>
+                      Delete
+                    </button>
+                  )}
                 </div>
               </li>
             ))}
@@ -196,16 +215,28 @@ export default function MembersAdmin() {
           <label key={key}>
             {label}
             {key === 'bio' ? (
-              <textarea name={key} value={form[key]} onChange={handleChange} />
+              <textarea
+                name={key}
+                value={form[key]}
+                onChange={handleChange}
+              />
             ) : (
-              <input name={key} value={form[key]} onChange={handleChange} />
+              <input
+                name={key}
+                value={form[key]}
+                onChange={handleChange}
+              />
             )}
           </label>
         ))}
 
         <label>
           Profile Photo
-          <input type="file" accept="image/*" onChange={handleFileChange} />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+          />
         </label>
 
         <label>
@@ -217,6 +248,7 @@ export default function MembersAdmin() {
             onChange={handleChange}
           />
         </label>
+
         <label>
           Portfolio Description
           <textarea
@@ -228,17 +260,27 @@ export default function MembersAdmin() {
 
         <label>
           Portfolio Images (up to 10)
-          <input type="file" accept="image/*" multiple onChange={handlePortfolioFiles} />
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handlePortfolioFiles}
+          />
         </label>
 
         <fieldset>
           <legend>SoundCloud Embeds (up to 3)</legend>
-          {[0,1,2].map(i => (
+          {form.soundcloud_embeds.map((val, i) => (
             <label key={i}>
-              Embed #{i+1}
+              Embed #{i + 1}
               <textarea
-                value={form.soundcloud_embeds[i]}
-                onChange={e => handleEmbedChange('sc', i, e.target.value)}
+                name="soundcloud_embeds"
+                value={val}
+                onChange={e => {
+                  const arr = [...form.soundcloud_embeds];
+                  arr[i] = e.target.value;
+                  setForm(f => ({ ...f, soundcloud_embeds: arr }));
+                }}
               />
             </label>
           ))}
@@ -246,12 +288,17 @@ export default function MembersAdmin() {
 
         <fieldset>
           <legend>Spotify Embeds (up to 3)</legend>
-          {[0,1,2].map(i => (
+          {form.spotify_embeds.map((val, i) => (
             <label key={i}>
-              Embed #{i+1}
+              Embed #{i + 1}
               <textarea
-                value={form.spotify_embeds[i]}
-                onChange={e => handleEmbedChange('sp', i, e.target.value)}
+                name="spotify_embeds"
+                value={val}
+                onChange={e => {
+                  const arr = [...form.spotify_embeds];
+                  arr[i] = e.target.value;
+                  setForm(f => ({ ...f, spotify_embeds: arr }));
+                }}
               />
             </label>
           ))}
