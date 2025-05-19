@@ -1,17 +1,12 @@
--- Seed the members permission
-INSERT INTO permissions(key)
--- Seed the members permission (now including a non-null description)
+-- 20250502_add_members_tables.sql
+
+-- 1) Seed the “members” permission (description now required)
 INSERT INTO permissions(key, description)
-VALUES (
-  'members',
-  'Grants access to the Members module'
-)
+VALUES ('members', 'Grants access to the Members module')
 ON CONFLICT (key) DO NOTHING;
 
-ON CONFLICT (key) DO NOTHING;
-
--- Core members table
-CREATE TABLE members (
+-- 2) Core members table
+CREATE TABLE IF NOT EXISTS members (
   id           SERIAL PRIMARY KEY,
   name         VARCHAR NOT NULL,
   role         VARCHAR NOT NULL,
@@ -29,8 +24,8 @@ CREATE TABLE members (
   updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Profile images table
-CREATE TABLE member_images (
+-- 3) Profile images table
+CREATE TABLE IF NOT EXISTS member_images (
   id         SERIAL PRIMARY KEY,
   member_id  INT REFERENCES members(id) ON DELETE CASCADE,
   url        VARCHAR NOT NULL,
@@ -39,8 +34,8 @@ CREATE TABLE member_images (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Portfolio items table
-CREATE TABLE member_portfolio (
+-- 4) Portfolio items table
+CREATE TABLE IF NOT EXISTS member_portfolio (
   id          SERIAL PRIMARY KEY,
   member_id   INT REFERENCES members(id) ON DELETE CASCADE,
   title       VARCHAR NOT NULL,

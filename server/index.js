@@ -1,32 +1,48 @@
 // server/index.js
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import pg from 'pg';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import multer from 'multer';
-import path from 'path';
 import process from 'process';
 import nodemailer from 'nodemailer';
 import sanitizeHtml from 'sanitize-html';
 
-// Load environment variables from server/.env – runs before anything
-// touches process.env so pg and nodemailer receive proper values.
-dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
+// Determine which .env file to load
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
+const envFile    = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
+dotenv.config({ path: path.resolve(__dirname, envFile) });
 
+// Safety check: prevent wiping non-test DB when running tests
+if (
+  process.env.NODE_ENV === 'test' &&
+  !/music_collective_test$/.test(process.env.DATABASE_URL)
+) {
+  console.error(
+    `⛔️ Aborting tests: DATABASE_URL (${process.env.DATABASE_URL}) is not your test database.`
+  );
+  process.exit(1);
+}
+
+// Email transporter (nodemailer)
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT) || 587,
   secure: process.env.SMTP_SECURE === 'true',
-  auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
 });
 
-// ── Uploads ─────────────────────────────────────────────────────────
-
-
+// ── Uploads configuration ────────────────────────────────────
 const { Pool } = pg;
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool     = new Pool({ connectionString: process.env.DATABASE_URL });
 
 const app = express();
 app.use(cors());
@@ -34,11 +50,8 @@ app.use(express.json());
 
 // ── File uploads via multer ─────────────────────────────────
 const uploadDir = path.join(process.cwd(), 'uploads');
-const upload = multer({ dest: uploadDir });
+const upload    = multer({ dest: uploadDir });
 app.use('/uploads', express.static(uploadDir));
-
-dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
-
 
 // ── Auth middleware ─────────────────────────────────────────
 function authenticateJWT(req, res, next) {
