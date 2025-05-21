@@ -15,6 +15,8 @@ export default function EventsAdmin() {
   const [file, setFile] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState(null);
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
 
   // Fetch & sort events: newest → oldest
   const {
@@ -57,12 +59,25 @@ export default function EventsAdmin() {
   }
 
   function handleFileChange(e) {
-    setFile(e.target.files[0]);
+    const f = e.target.files[0] ?? null;
+    if (f && f.size > MAX_FILE_SIZE) {
+      setMessage('Event image is too large. Max 10 MB.');
+      setFile(null);
+      e.target.value = '';          // clear the <input>
+      return;
+    }
+    setFile(f);
   }
+  
 
   function handleSubmit(e) {
     e.preventDefault();
     setMessage(null);
+    if (file && file.size > MAX_FILE_SIZE) {
+      setMessage('Event image is too large. Max 10 MB.');
+      return;
+    }
+    
 
     const data = new FormData();
     data.append('title', form.title);
