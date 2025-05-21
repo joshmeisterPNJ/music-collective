@@ -6,8 +6,8 @@ export default function HomePage() {
   return (
     <div className="homepage">
       <div className="homepage-content">
-        <h1>Welcome to Music Collective</h1>
-        <p>Explore our upcoming events and more.</p>
+        <h1></h1>
+        <p></p>
       </div>
     </div>
   );
