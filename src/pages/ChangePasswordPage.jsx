@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from '../config';
 import { useAuth } from '../AuthContext';
+import { useTranslation } from 'react-i18next';   // ← import the translation hook
 
 export default function ChangePasswordPage() {
+  const { t } = useTranslation();                 // ← get the translator
   const { user, loading, setToken } = useAuth();
   const navigate = useNavigate();
 
@@ -22,34 +24,31 @@ export default function ChangePasswordPage() {
         `${API_BASE_URL}/api/auth/change-password`,
         { currentPassword, newPassword }
       );
-      // Inform AuthContext and persist the new token
+      // Persist new token
       setToken(data.token);
       localStorage.setItem('token', data.token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
       setSuccess(data.message);
     } catch (err) {
-      setError(err.response?.data?.error || 'Error updating password');
+      // If server sent an error string, show it; otherwise use fallback translation
+      setError(
+        err.response?.data?.error ||
+        t('changePasswordPage.errorMessage')
+      );
     }
   };
 
   useEffect(() => {
-    // Only fire once the password change succeeded,
-    // AuthContext has reloaded the user (must_change_password cleared),
-    // and we have a user object.
+    // After success and AuthContext reload, redirect off the forced-password page
     if (success && !loading && user && user.must_change_password === false) {
       let target;
       if (user.role === 'superadmin') {
-        // superadmins go to events admin
         target = '/admin/events';
       } else if (user.permissions?.includes('events')) {
-        // admins with events permission
         target = '/admin/events';
       } else if (user.permissions?.includes('users')) {
-        // admins with users permission
         target = '/admin/users';
       } else {
-        // all others (including regular admins with only "members" perm)
-        // land on their own profile in back‑office
         target = `/admin/members/${user.id}`;
       }
       navigate(target, { replace: true });
@@ -58,12 +57,13 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="change-password">
-      <h1>Change Password</h1>
+      <h1>{t('changePasswordPage.title')}</h1>
       {error   && <p className="error">{error}</p>}
       {success && <p className="success">{success}</p>}
+
       <form onSubmit={handleSubmit}>
         <label>
-          Current Password
+          {t('changePasswordPage.currentPasswordLabel')}
           <input
             required
             type="password"
@@ -71,8 +71,9 @@ export default function ChangePasswordPage() {
             onChange={e => setCurrentPassword(e.target.value)}
           />
         </label>
+
         <label>
-          New Password
+          {t('changePasswordPage.newPasswordLabel')}
           <input
             required
             type="password"
@@ -80,7 +81,10 @@ export default function ChangePasswordPage() {
             onChange={e => setNewPassword(e.target.value)}
           />
         </label>
-        <button type="submit">Update Password</button>
+
+        <button type="submit">
+          {t('changePasswordPage.submitButton')}
+        </button>
       </form>
     </div>
   );

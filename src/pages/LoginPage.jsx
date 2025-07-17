@@ -2,9 +2,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import { useTranslation } from "react-i18next";
 import "./LoginPage.css";
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const auth = useAuth();
   const navigate = useNavigate();
 
@@ -26,38 +28,38 @@ export default function LoginPage() {
       await auth.login(username, password);
       navigate(landingFor(auth.user), { replace: true });
     } catch {
-      setErr("Invalid credentials");
+      setErr(t("login.error.invalidCredentials"));
     }
   };
 
   return (
     <div className="login-wrapper">
       <form className="login-card" onSubmit={handleSubmit}>
-        <h1>Collectif</h1>
+        <h1>{t("login.title")}</h1>
         {err && <p className="error-msg">{err}</p>}
 
         <label>
-          Username Joshmeister
+          {t("login.usernameLabel")}
           <input
             required
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="joshmeister"
+            placeholder={t("login.usernamePlaceholder")}
           />
         </label>
 
         <label>
-          Password: AguguweKonami
+          {t("login.passwordLabel")}
           <input
             required
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder=""
+            placeholder={t("login.passwordPlaceholder")}
           />
         </label>
 
-        <button type="submit">Log In</button>
+        <button type="submit">{t("login.button")}</button>
       </form>
     </div>
   );

@@ -1,0 +1,210 @@
+{
+  "header": {
+    "home":           "Home",
+    "events":         "Events",
+    "members":        "Members",
+    "login":          "Log In",
+    "logout":         "Log Out",
+    "changeLanguage": "Change language"
+  },
+  "nav": {
+    "profile":     "My Profile",
+    "events":      "Events",
+    "users":       "Users",
+    "members":     "Members",
+    "toggleTheme": "Toggle theme"
+  },
+  "login": {
+    "title":                  "Log in",
+    "button":                 "Sign in",
+    "error": {
+      "invalidCredentials":   "Invalid credentials"
+    },
+    "usernameLabel":          "Username",
+    "usernamePlaceholder":    "joshmeister",
+    "passwordLabel":          "Password",
+    "passwordPlaceholder":    ""
+  },
+  "homePage": {
+    "loading":  "Loading featured content…",
+    "error":    "Failed to load featured content.",
+    "title":    "Welcome to Tissé Collectif",
+    "subtitle": "Your living gallery — mixes, tracks, posters, after-movies",
+    "featured": "Featured Events & Mixes"
+  },
+  "eventsPage": {
+    "upcoming":      "Upcoming",
+    "past":          "Past",
+    "upcomingTitle": "Upcoming Events",
+    "pastTitle":     "Past Events",
+    "loading":       "Loading events…",
+    "error":         "Failed to load events."
+  },
+  "membersPage": {
+    "loading": "Loading members…",
+    "error":   "Error loading members.",
+    "title":   "Members"
+  },
+  "accountArchivedPage": {
+    "title":   "Account Archived",
+    "message": "It looks like your account has been removed from the collective. If you think this is an error, please reach out to the administrator."
+  },
+  "changePasswordPage": {
+    "title":                    "Change Password",
+    "currentPasswordLabel":     "Current Password",
+    "newPasswordLabel":         "New Password",
+    "submitButton":             "Update Password",
+    "errorMessage":             "Error updating password"
+  },
+  "usersAdmin": {
+    "loading":           "Loading users…",
+    "error":             "Error loading users.",
+    "title":             "User Management",
+    "createSection": {
+      "heading":       "Create New Admin",
+      "usernameLabel": "Username",
+      "passwordLabel": "Password",
+      "roleLabel":     "Role",
+      "joinDateLabel": "Join Date",
+      "submitButton":  "Create Admin"
+    },
+    "table": {
+      "usernameHeader":    "Username",
+      "roleHeader":        "Role",
+      "permissionsHeader": "Permissions",
+      "saveHeader":        "Save",
+      "deleteHeader":      "Delete"
+    },
+    "permissions": {
+      "events": "Events"
+    },
+    "messages": {
+      "adminCreated":    "Admin created!",
+      "errorCreating":   "Error creating admin",
+      "saved":           "Saved!",
+      "errorSaving":     "Error",
+      "adminDeleted":    "Admin deleted",
+      "deleteFailed":    "Delete failed"
+    },
+    "confirm": {
+      "deleteAdmin":     "Delete this admin?"
+    }
+  },
+  "eventsAdmin": {
+    "title":               "Events Admin",
+    "message": {
+      "created":           "Created!",
+      "updated":           "Updated!",
+      "deleted":           "Deleted",
+      "error":             "Error",
+      "deleteFailed":      "Delete failed",
+      "imageTooLarge":     "Event image is too large. Max 10 MB."
+    },
+    "confirm": {
+      "deleteEvent":       "Delete this event?"
+    },
+    "form": {
+      "createHeading":     "Create Event",
+      "editHeading":       "Edit Event",
+      "labels": {
+        "title":           "Title",
+        "date":            "Date",
+        "description":     "Description",
+        "imageFile":       "Image File"
+      },
+      "imageHelp":         "(leave blank to keep current)",
+      "submit": {
+        "create":          "Create Event",
+        "save":            "Save Changes"
+      }
+    },
+    "existing": {
+      "heading":           "Existing Events",
+      "refreshing":        "(refreshing…)"
+    },
+    "actions": {
+      "edit":              "Edit",
+      "delete":            "Delete"
+    }
+  },
+  "membersAdmin": {
+    "loadingList":         "Loading members…",
+    "loadingSingle":       "Loading member…",
+    "messages": {
+      "updated":           "Member updated!",
+      "deleted":           "Member deleted",
+      "errorUpdate":       "Update failed",
+      "errorDelete":       "Delete failed"
+    },
+    "confirm": {
+      "deleteMember":     "Delete this member?"
+    },
+    "list": {
+      "heading":          "Members",
+      "refreshing":       "(refreshing…)"
+    },
+    "form": {
+      "editMember":       "Edit Member",
+      "editProfile":      "Edit Your Profile",
+      "labels": {
+        "name":                  "Name",
+        "role":                  "Artist Role",
+        "genres":                "Genres",
+        "bio":                   "Bio",
+        "email":                 "Email",
+        "city":                  "City",
+        "country":               "Country",
+        "instagram":             "Instagram URL",
+        "soundcloud":            "SoundCloud URL",
+        "spotify":               "Spotify URL",
+        "bandcamp":              "Bandcamp URL",
+        "profilePhoto":          "Profile Photo",
+        "portfolioLink":         "Portfolio Link",
+        "portfolioDescription":  "Portfolio Description",
+        "portfolioImages":       "Portfolio Images (up to 10)"
+      },
+      "fieldsets": {
+        "soundcloudLegend":      "SoundCloud Embeds (max 3)",
+        "spotifyLegend":         "Spotify Embeds (max 3)",
+        "embedLabel":            "Embed #{{count}}"
+      },
+      "submitButton":           "Save Changes"
+    },
+    "actions": {
+      "edit":                 "Edit",
+      "delete":               "Delete"
+    }
+  },
+  "memberDetailPage": {
+    "loading":             "Loading member…",
+    "error":               "Error loading member.",
+    "editProfile":         "Edit Profile",
+    "socials": {
+      "instagram":         "Instagram",
+      "soundcloud":        "SoundCloud",
+      "spotify":           "Spotify",
+      "bandcamp":          "Bandcamp"
+    },
+    "sections": {
+      "soundcloud":        "SoundCloud",
+      "spotify":           "Spotify",
+      "portfolio":         "Portfolio"
+    },
+    "portfolio": {
+      "viewWork":          "View Work ↗"
+    },
+    "contact":             "Contact {{name}}"
+  },
+  "contactForm": {
+    "status": {
+      "sent":             "Message sent!",
+      "failed":           "Failed to send."
+    },
+    "labels": {
+      "name":             "Your Name",
+      "email":            "Your Email",
+      "message":          "Message"
+    },
+    "button":              "Send"
+  }
+}

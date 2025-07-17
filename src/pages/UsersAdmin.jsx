@@ -1,24 +1,25 @@
 // src/pages/UsersAdmin.jsx
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { API_BASE_URL } from '../config';
 
 export default function UsersAdmin() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [msg, setMsg] = useState(null);
 
-  // ─── Create-Admin form state & mutation ──────────────────────────
+  // ── Create-Admin form state & mutation ───────────────────────────
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [newRole,     setNewRole]     = useState('admin');
+  const [newRole, setNewRole] = useState('admin');
   const [newJoinDate, setNewJoinDate] = useState('');
 
   const createAdmin = useMutation({
-    mutationFn: data =>
-      axios.post(`${API_BASE_URL}/api/auth/register`, data),
+    mutationFn: data => axios.post(`${API_BASE_URL}/api/auth/register`, data),
     onSuccess: () => {
-      setMsg('Admin created!');
+      setMsg(t('usersAdmin.messages.adminCreated'));
       setNewUsername('');
       setNewPassword('');
       setNewRole('admin');
@@ -26,38 +27,30 @@ export default function UsersAdmin() {
       queryClient.invalidateQueries({ queryKey: ['admins'] });
     },
     onError: err =>
-      setMsg(err.response?.data?.error || 'Error creating admin'),
+      setMsg(err.response?.data?.error || t('usersAdmin.messages.errorCreating')),
   });
 
   const handleCreate = e => {
     e.preventDefault();
     setMsg(null);
     createAdmin.mutate({
-      username:  newUsername,
-      password:  newPassword,
-      role:      newRole,
+      username: newUsername,
+      password: newPassword,
+      role: newRole,
       join_date: newJoinDate,
     });
   };
 
-  // ─── Permissions & users fetch ───────────────────────────────────
+  // ── Fetch existing admins ──────────────────────────────────────────
   const allPerms = ['events'];
-  const {
-    data: admins = [],
-    isLoading,
-    error,
-    isFetching,
-  } = useQuery({
+  const { data: admins = [], isLoading, error, isFetching } = useQuery({
     queryKey: ['admins'],
-    queryFn: async () => {
-      const res = await axios.get(`${API_BASE_URL}/api/admins`);
-      return res.data;
-    },
+    queryFn: () => axios.get(`${API_BASE_URL}/api/admins`).then(r => r.data),
   });
 
-  // ─── Toggle permission locally ───────────────────────────────────
-  const toggle = (adminId, permKey) => {
-    queryClient.setQueryData(['admins'], (old = []) =>
+  // ── Optimistic toggle of permissions ──────────────────────────────
+  const toggle = (adminId, permKey) =>
+    queryClient.setQueryData(['admins'], old =>
       old.map(ad =>
         ad.id === adminId
           ? {
@@ -69,19 +62,18 @@ export default function UsersAdmin() {
           : ad
       )
     );
-  };
 
-  // ─── Save permissions to server ──────────────────────────────────
+  // ── Persist permissions to server ─────────────────────────────────
   const savePerms = useMutation({
     mutationFn: ({ adminId, permissions }) =>
       axios.patch(`${API_BASE_URL}/api/admins/${adminId}/permissions`, {
         permissionKeys: permissions,
       }),
     onSuccess: () => {
-      setMsg('Saved!');
+      setMsg(t('usersAdmin.messages.saved'));
       queryClient.invalidateQueries({ queryKey: ['admins'] });
     },
-    onError: () => setMsg('Error'),
+    onError: () => setMsg(t('usersAdmin.messages.errorSaving')),
   });
 
   const save = (adminId, permissions) => {
@@ -89,40 +81,39 @@ export default function UsersAdmin() {
     savePerms.mutate({ adminId, permissions });
   };
 
-  // ─── Delete admin account ────────────────────────────────────────
+  // ── Delete admin account ──────────────────────────────────────────
   const deleteAdmin = useMutation({
     mutationFn: id => axios.delete(`${API_BASE_URL}/api/admins/${id}`),
     onSuccess: () => {
-      setMsg('Admin deleted');
+      setMsg(t('usersAdmin.messages.adminDeleted'));
       queryClient.invalidateQueries({ queryKey: ['admins'] });
     },
-    onError: () => setMsg('Delete failed'),
+    onError: () => setMsg(t('usersAdmin.messages.deleteFailed')),
   });
 
   const handleDelete = id => {
-    if (!confirm('Delete this admin?')) return;
+    if (!confirm(t('usersAdmin.confirm.deleteAdmin'))) return;
     setMsg(null);
     deleteAdmin.mutate(id);
   };
 
-  // ─── Render logic ────────────────────────────────────────────────
-  if (isLoading) return <p>Loading users…</p>;
-  if (error)     return <p>Error loading users</p>;
+  // ── Render ────────────────────────────────────────────────────────
+  if (isLoading) return <p>{t('usersAdmin.loading')}</p>;
+  if (error)     return <p>{t('usersAdmin.error')}</p>;
 
-  // hide super-admin from list
   const visibleAdmins = admins.filter(ad => ad.role !== 'superadmin');
 
   return (
     <div className="users-admin">
-      <h1>User Management</h1>
+      <h1>{t('usersAdmin.title')}</h1>
       {msg        && <p>{msg}</p>}
-      {isFetching && <p>Refreshing…</p>}
+      {isFetching && <p>{t('usersAdmin.messages.refreshing')}</p>}
 
       {/* Create Admin Form */}
       <form className="admin-form" onSubmit={handleCreate}>
-        <h2>Create New Admin</h2>
+        <h2>{t('usersAdmin.createSection.heading')}</h2>
         <label>
-          Username
+          {t('usersAdmin.createSection.usernameLabel')}
           <input
             required
             value={newUsername}
@@ -130,7 +121,7 @@ export default function UsersAdmin() {
           />
         </label>
         <label>
-          Password
+          {t('usersAdmin.createSection.passwordLabel')}
           <input
             required
             type="password"
@@ -139,35 +130,42 @@ export default function UsersAdmin() {
           />
         </label>
         <label>
-          Role
+          {t('usersAdmin.createSection.roleLabel')}
           <select
             value={newRole}
             onChange={e => setNewRole(e.target.value)}
           >
-            <option value="admin">Admin</option>
-            <option value="superadmin">Superadmin</option>
+            <option value="admin">
+              {t('usersAdmin.createSection.roleAdmin', 'Admin')}
+            </option>
+            <option value="superadmin">
+              {t('usersAdmin.createSection.roleSuperadmin', 'Superadmin')}
+            </option>
           </select>
         </label>
         <label>
-          Join Date
+          {t('usersAdmin.createSection.joinDateLabel')}
           <input
             type="date"
             value={newJoinDate}
             onChange={e => setNewJoinDate(e.target.value)}
           />
         </label>
-        <button type="submit">Create Admin</button>
+        <button type="submit">
+          {t('usersAdmin.createSection.submitButton')}
+        </button>
       </form>
 
       {/* Existing Admins Table */}
       <table>
         <thead>
           <tr>
-            <th>Username</th>
-            <th>Role</th>
-            {allPerms.map(p => <th key={p}>{p}</th>)}
-            <th>Save</th>
-            <th>Delete</th>
+            <th>{t('usersAdmin.table.usernameHeader')}</th>
+            <th>{t('usersAdmin.table.roleHeader')}</th>
+            {allPerms.map(p => (
+              <th key={p}>{t(`usersAdmin.permissions.${p}`, p)}</th>
+            ))}
+            
           </tr>
         </thead>
         <tbody>
@@ -185,10 +183,14 @@ export default function UsersAdmin() {
                 </td>
               ))}
               <td>
-                <button onClick={() => save(ad.id, ad.permissions)}>💾</button>
+                <button onClick={() => save(ad.id, ad.permissions)}>
+                  {t('usersAdmin.table.saveHeader')}
+                </button>
               </td>
               <td>
-                <button onClick={() => handleDelete(ad.id)}>🗑️</button>
+                <button onClick={() => handleDelete(ad.id)}>
+                  {t('usersAdmin.table.deleteHeader')}
+                </button>
               </td>
             </tr>
           ))}

@@ -7,7 +7,7 @@ import {
   Navigate,
   Link,
 } from 'react-router-dom';
-
+import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './AuthContext';
 import HomePage from './pages/HomePage';
 import EventsPage from './pages/EventsPage';
@@ -16,19 +16,20 @@ import UsersAdmin from './pages/UsersAdmin';
 import MembersAdmin from './pages/MembersAdmin';
 import MembersPage from './pages/MembersPage';
 import MemberDetailPage from './pages/MemberDetailPage';
-import AccountArchivedPage from './pages/AccountArchivedPage';
 import LoginPage from './pages/LoginPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
+import AccountArchivedPage from './pages/AccountArchivedPage';
 import AdminBar from './components/AdminBar';
-
 import './App.css';
 
+// Public-only: redirect logged-in users away from login
 function PublicOnlyRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return null;
   return user ? <Navigate to="/admin/events" replace /> : children;
 }
 
+// Protected: require auth and optional permission/super checks
 function ProtectedRoute({ children, permission, superOnly }) {
   const { user, loading } = useAuth();
   if (loading) return null;
@@ -45,37 +46,56 @@ function ProtectedRoute({ children, permission, superOnly }) {
   return children;
 }
 
+// Global Navbar with i18n and language switcher
 function Navbar() {
+  const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
+
   return (
-    <nav>
+    <nav className="main-nav">
       <ul>
-        <li><Link to="/">Home</Link></li>
-        <li><Link to="/events">Events</Link></li>
-        <li><Link to="/members">Members</Link></li>
+        <li><Link to="/">{t('header.home')}</Link></li>
+        <li><Link to="/events">{t('header.events')}</Link></li>
+        <li><Link to="/members">{t('header.members')}</Link></li>
+
         {user && !user.must_change_password ? (
-          <li><button onClick={logout}>Log Out</button></li>
+          <li>
+            <button onClick={logout}>{t('header.logout')}</button>
+          </li>
         ) : (
-          <li><Link to="/login">Log In</Link></li>
+          <li>
+            <Link to="/login">{t('header.login')}</Link>
+          </li>
         )}
+
+        <li className="lang-switch">
+          <select
+            value={i18n.language}
+            onChange={e => i18n.changeLanguage(e.target.value)}
+            aria-label={t('header.changeLanguage')}
+          >
+            <option value="en">EN</option>
+            <option value="fr">FR</option>
+          </select>
+        </li>
       </ul>
     </nav>
   );
 }
 
+// App routes: public, auth, admin
 function AppRoutes() {
   const { user } = useAuth();
   const showAdminBar =
     user &&
-    (user.role === 'superadmin' ||
-      (user.permissions && user.permissions.length > 0));
+    (user.role === 'superadmin' || (user.permissions && user.permissions.length > 0));
 
   return (
     <>
       <Navbar />
       {showAdminBar && <AdminBar />}
       <Routes>
-        {/* Public routes */}
+        {/* Public */}
         <Route path="/" element={<HomePage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route
@@ -94,12 +114,10 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-
-        {/* Public Members */}
         <Route path="/members" element={<MembersPage />} />
         <Route path="/members/:id" element={<MemberDetailPage />} />
 
-        {/* Admin routes */}
+        {/* Admin */}
         <Route path="/admin" element={<Navigate to="/admin/events" replace />} />
         <Route
           path="/admin/events"
@@ -134,10 +152,10 @@ function AppRoutes() {
           }
         />
 
-        {/* Account-Archived */}
+        {/* Account archived */}
         <Route path="/account-archived" element={<AccountArchivedPage />} />
 
-        {/* Catch-all */}
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

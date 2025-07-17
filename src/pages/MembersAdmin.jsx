@@ -1,31 +1,36 @@
-// ─────────────────────── src/pages/MembersAdmin.jsx ───────────────────────
+// src/pages/MembersAdmin.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 
 import { API_BASE_URL } from '../config';
-import { uploadToR2 }   from '../utils/uploadR2';   // helper already in repo :contentReference[oaicite:0]{index=0}
-import { useAuth }      from '../AuthContext';
+import { uploadToR2 } from '../utils/uploadR2';
+import { useAuth } from '../AuthContext';
 
 import './MembersAdmin.css';
 
 export default function MembersAdmin() {
-  // ─── Auth / routing helpers ───────────────────────────────────────────
-  const { user }      = useAuth();
+  const { t } = useTranslation();
+  const { user } = useAuth();
   const { id: param } = useParams();
-  const navigate      = useNavigate();
-  const queryClient   = useQueryClient();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const isSuper = user.role === 'superadmin';
-  const isOwn   = param === String(user.id);
-  const editId  = isSuper && !isOwn && param ? param : user.id;
+  const isOwn = param === String(user.id);
+  const editId = isSuper && !isOwn && param ? param : user.id;
 
-  // ─── Fetch list (super-only) + single member ──────────────────────────
-  const { data: members = [], isFetching: listFetching } = useQuery({
+  // Fetch list (super-only) + single member
+  const {
+    data: members = [],
+    isFetching: listFetching,
+  } = useQuery({
     queryKey: ['members'],
-    queryFn:  () => axios.get(`${API_BASE_URL}/api/members`).then(r => r.data),
-    enabled:  isSuper && !isOwn,
+    queryFn: () =>
+      axios.get(`${API_BASE_URL}/api/members`).then((r) => r.data),
+    enabled: isSuper && !isOwn,
   });
 
   const {
@@ -34,54 +39,63 @@ export default function MembersAdmin() {
     error: memberError,
   } = useQuery({
     queryKey: ['member', editId],
-    queryFn:  () => axios.get(`${API_BASE_URL}/api/members/${editId}`).then(r => r.data),
-    enabled:  !!editId,
+    queryFn: () =>
+      axios.get(`${API_BASE_URL}/api/members/${editId}`).then((r) => r.data),
+    enabled: !!editId,
   });
 
-  // ─── Local state ──────────────────────────────────────────────────────
+  // Local state
   const [message, setMessage] = useState(null);
-  const [saving,  setSaving]  = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const emptyForm = {
-    name: '', role: '', genres: '', bio: '', email: '',
-    city: '', country: '',
-    instagram: '', soundcloud: '', spotify: '', bandcamp: '',
+    name: '',
+    role: '',
+    genres: '',
+    bio: '',
+    email: '',
+    city: '',
+    country: '',
+    instagram: '',
+    soundcloud: '',
+    spotify: '',
+    bandcamp: '',
     photo: null,
     portfolio_link: '',
     portfolio_description: '',
     portfolio_images: [],
     soundcloud_embeds: ['', '', ''],
-    spotify_embeds:    ['', '', ''],
+    spotify_embeds: ['', '', ''],
   };
   const [form, setForm] = useState(emptyForm);
 
-  // ─── Mutations ────────────────────────────────────────────────────────
+  // Mutations
   const saveMember = useMutation({
-    mutationFn: payload =>
+    mutationFn: (payload) =>
       axios.put(`${API_BASE_URL}/api/members/${editId}`, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['members'] });
       queryClient.invalidateQueries({ queryKey: ['member', editId] });
-      setMessage('Member updated!');
+      setMessage(t('membersAdmin.messages.updated'));
     },
-    onError: err =>
-      setMessage(err.response?.data?.error || 'Update failed'),
+    onError: (err) =>
+      setMessage(err.response?.data?.error || t('membersAdmin.messages.errorUpdate')),
   });
 
   const deleteMember = useMutation({
-    mutationFn: id => axios.delete(`${API_BASE_URL}/api/members/${id}`),
+    mutationFn: (id) => axios.delete(`${API_BASE_URL}/api/members/${id}`),
     onSuccess: () => {
-      setMessage('Member deleted');
+      setMessage(t('membersAdmin.messages.deleted'));
       queryClient.invalidateQueries({ queryKey: ['members'] });
       navigate('/admin/members');
     },
-    onError: () => setMessage('Delete failed'),
+    onError: () => setMessage(t('membersAdmin.messages.errorDelete')),
   });
 
-  // ─── Populate form when data loads ────────────────────────────────────
+  // Populate form when data loads
   useEffect(() => {
     if (single) {
-      setForm(f => ({
+      setForm((f) => ({
         ...f,
         ...single,
         photo: null,
@@ -90,101 +104,117 @@ export default function MembersAdmin() {
     }
   }, [single]);
 
-  // ─── Conditional redirect if the member was deleted ───────────────────
+  // Redirect if member was deleted
   if (memberError?.response?.status === 404) {
     return <Navigate to="/account-archived" replace />;
   }
 
-  // ─── Loading states ───────────────────────────────────────────────────
-  if (isSuper && !isOwn && listFetching)   return <p>Loading members…</p>;
-  if ((!isSuper || isOwn) && memberLoading) return <p>Loading member…</p>;
+  // Loading states
+  if (isSuper && !isOwn && listFetching)
+    return <p>{t('membersAdmin.loadingList')}</p>;
+  if ((!isSuper || isOwn) && memberLoading)
+    return <p>{t('membersAdmin.loadingSingle')}</p>;
 
-  // ─── Handlers ─────────────────────────────────────────────────────────
-  const handleChange = e =>
+  // Handlers
+  const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleFileChange     = e =>
+  const handleFileChange = (e) =>
     setForm({ ...form, photo: e.target.files[0] });
 
-  const handlePortfolioFiles = e =>
+  const handlePortfolioFiles = (e) =>
     setForm({ ...form, portfolio_images: Array.from(e.target.files) });
 
-  const startEdit    = m  => navigate(`/admin/members/${m.id}`);
-  const handleDelete = id => {
-    if (confirm('Delete this member?')) deleteMember.mutate(id);
+  const startEdit = (m) => navigate(`/admin/members/${m.id}`);
+  const handleDelete = (id) => {
+    if (!confirm(t('membersAdmin.confirm.deleteMember'))) return;
+    deleteMember.mutate(id);
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage(null);
     setSaving(true);
-  
+
     try {
       // 1) client-side size guard
       if (form.photo && form.photo.size > 10 * 1024 * 1024) {
-        throw new Error("Profile photo is too large. Max 10 MB.");
+        throw new Error(t('membersAdmin.form.errorPhotoTooLarge'));
       }
       for (let img of form.portfolio_images) {
         if (img.size > 10 * 1024 * 1024) {
-          throw new Error("One of the portfolio images is too large. Max 10 MB.");
+          throw new Error(t('membersAdmin.form.errorPortfolioTooLarge'));
         }
       }
-  
+
       // 2) upload to R2
       let photoUrl = null;
       if (form.photo) {
         photoUrl = await uploadToR2(form.photo);
       }
-  
+
       let portfolioUrls = [];
       if (form.portfolio_images.length) {
         portfolioUrls = await Promise.all(
           form.portfolio_images.map(uploadToR2)
         );
       }
-  
+
       // 3) save via API
       const payload = {
         ...form,
-        photo:            photoUrl,
+        photo: photoUrl,
         portfolio_images: portfolioUrls,
       };
       await saveMember.mutateAsync(payload);
-  
+
       // 4) redirect to public profile
       navigate(`/members/${editId}`, { replace: true });
-  
     } catch (err) {
       setMessage(err.message);
     } finally {
       setSaving(false);
     }
-  };  
+  };
 
-  // ─── Render helpers ──────────────────────────────────────────────────
+  // Render helpers
   const baseFields = [
-    ['name', 'Name'], ['role', 'Artist Role'], ['genres', 'Genres'],
-    ['bio', 'Bio'],   ['email', 'Email'],      ['city', 'City'],
-    ['country', 'Country'],
-    ['instagram', 'Instagram URL'], ['soundcloud', 'SoundCloud URL'],
-    ['spotify', 'Spotify URL'],     ['bandcamp', 'Bandcamp URL'],
+    ['name', t('membersAdmin.form.labels.name')],
+    ['role', t('membersAdmin.form.labels.role')],
+    ['genres', t('membersAdmin.form.labels.genres')],
+    ['bio', t('membersAdmin.form.labels.bio')],
+    ['email', t('membersAdmin.form.labels.email')],
+    ['city', t('membersAdmin.form.labels.city')],
+    ['country', t('membersAdmin.form.labels.country')],
+    ['instagram', t('membersAdmin.form.labels.instagram')],
+    ['soundcloud', t('membersAdmin.form.labels.soundcloud')],
+    ['spotify', t('membersAdmin.form.labels.spotify')],
+    ['bandcamp', t('membersAdmin.form.labels.bandcamp')],
   ];
 
-  // ─── JSX ──────────────────────────────────────────────────────────────
   return (
     <div className="admin-page">
       {message && <p className="admin-message">{message}</p>}
 
       {isSuper && !isOwn && (
         <div className="admin-list">
-          <h2>Members {listFetching && '(refreshing…)'} </h2>
+          <h2>
+            {t('membersAdmin.list.heading')}
+            {listFetching && ` ${t('membersAdmin.list.refreshing')}`}
+          </h2>
           <ul>
-            {members.map(m => (
+            {members.map((m) => (
               <li key={m.id}>
-                <span>{m.name} — {m.role} ({m.city}, {m.country})</span>
+                <span>
+                  {m.name} — {m.role} ({m.city}, {m.country})
+                </span>
                 <div className="admin-actions">
-                  <button onClick={() => startEdit(m)}>Edit</button>
-                  <button onClick={() => handleDelete(m.id)}>Delete</button>
+                  <button onClick={() => startEdit(m)}>
+                    {t('membersAdmin.actions.edit')}
+                  </button>
+                  <button onClick={() => handleDelete(m.id)}>
+                    {t('membersAdmin.actions.delete')}
+                  </button>
                 </div>
               </li>
             ))}
@@ -193,28 +223,51 @@ export default function MembersAdmin() {
       )}
 
       <form className="admin-form" onSubmit={handleSubmit}>
-        <h2>{isSuper && !isOwn ? 'Edit Member' : 'Edit Your Profile'}</h2>
+        <h2>
+          {isSuper && !isOwn
+            ? t('membersAdmin.form.editMember')
+            : t('membersAdmin.form.editProfile')}
+        </h2>
 
         {baseFields.map(([key, label]) => (
           <label key={key}>
             {label}
             {key === 'bio' ? (
-              <textarea name={key} value={form[key]} onChange={handleChange} />
+              <textarea
+                name={key}
+                value={form[key]}
+                onChange={handleChange}
+              />
             ) : (
-              <input name={key} value={form[key]} onChange={handleChange} />
+              <input
+                name={key}
+                value={form[key]}
+                onChange={handleChange}
+              />
             )}
           </label>
         ))}
 
-        <label>Profile Photo
-          <input type="file" accept="image/*" onChange={handleFileChange}/>
+        <label>
+          {t('membersAdmin.form.labels.profilePhoto')}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+          />
         </label>
 
-        <label>Portfolio Link
-          <input name="portfolio_link" value={form.portfolio_link} onChange={handleChange}/>
+        <label>
+          {t('membersAdmin.form.labels.portfolioLink')}
+          <input
+            name="portfolio_link"
+            value={form.portfolio_link}
+            onChange={handleChange}
+          />
         </label>
 
-        <label>Portfolio Description
+        <label>
+          {t('membersAdmin.form.labels.portfolioDescription')}
           <textarea
             name="portfolio_description"
             value={form.portfolio_description}
@@ -222,17 +275,24 @@ export default function MembersAdmin() {
           />
         </label>
 
-        <label>Portfolio Images (up to 10)
-          <input type="file" accept="image/*" multiple onChange={handlePortfolioFiles}/>
+        <label>
+          {t('membersAdmin.form.labels.portfolioImages')}
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handlePortfolioFiles}
+          />
         </label>
 
         <fieldset>
-          <legend>SoundCloud Embeds (max 3)</legend>
+          <legend>{t('membersAdmin.form.fieldsets.soundcloudLegend')}</legend>
           {form.soundcloud_embeds.map((val, i) => (
-            <label key={i}>Embed #{i + 1}
+            <label key={i}>
+              {t('membersAdmin.form.fieldsets.embedLabel', { count: i + 1 })}
               <textarea
                 value={val}
-                onChange={e => {
+                onChange={(e) => {
                   const next = [...form.soundcloud_embeds];
                   next[i] = e.target.value;
                   setForm({ ...form, soundcloud_embeds: next });
@@ -243,12 +303,13 @@ export default function MembersAdmin() {
         </fieldset>
 
         <fieldset>
-          <legend>Spotify Embeds (max 3)</legend>
+          <legend>{t('membersAdmin.form.fieldsets.spotifyLegend')}</legend>
           {form.spotify_embeds.map((val, i) => (
-            <label key={i}>Embed #{i + 1}
+            <label key={i}>
+              {t('membersAdmin.form.fieldsets.embedLabel', { count: i + 1 })}
               <textarea
                 value={val}
-                onChange={e => {
+                onChange={(e) => {
                   const next = [...form.spotify_embeds];
                   next[i] = e.target.value;
                   setForm({ ...form, spotify_embeds: next });
@@ -259,7 +320,9 @@ export default function MembersAdmin() {
         </fieldset>
 
         <button type="submit" disabled={saving}>
-          {saving ? 'Saving…' : 'Save Changes'}
+          {saving
+            ? t('membersAdmin.form.saving')
+            : t('membersAdmin.form.submitButton')}
         </button>
       </form>
     </div>

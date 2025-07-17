@@ -1,0 +1,210 @@
+{
+  "header": {
+    "home":           "Accueil",
+    "events":         "Événements",
+    "members":        "Membres",
+    "login":          "Se connecter",
+    "logout":         "Se déconnecter",
+    "changeLanguage": "Changer de langue"
+  },
+  "nav": {
+    "profile":     "Mon Profil",
+    "events":      "Événements",
+    "users":       "Utilisateurs",
+    "members":     "Membres",
+    "toggleTheme": "Changer le thème"
+  },
+  "login": {
+    "title":                  "Connexion",
+    "button":                 "Se connecter",
+    "error": {
+      "invalidCredentials":   "Identifiants invalides"
+    },
+    "usernameLabel":          "Nom d’utilisateur",
+    "usernamePlaceholder":    "joshmeister",
+    "passwordLabel":          "Mot de passe",
+    "passwordPlaceholder":    ""
+  },
+  "homePage": {
+    "loading":  "Chargement du contenu à l'affiche…",
+    "error":    "Échec du chargement du contenu.",
+    "title":    "Bienvenue chez Tissé Collectif",
+    "subtitle": "Votre galerie vivante — mixes, morceaux, affiches, after-movies",
+    "featured": "Événements et mixes en vedette"
+  },
+  "eventsPage": {
+    "upcoming":      "À venir",
+    "past":          "Passés",
+    "upcomingTitle": "Événements à venir",
+    "pastTitle":     "Événements passés",
+    "loading":       "Chargement des événements…",
+    "error":         "Échec du chargement des événements."
+  },
+  "membersPage": {
+    "loading": "Chargement des membres…",
+    "error":   "Erreur lors du chargement des membres.",
+    "title":   "Membres"
+  },
+  "accountArchivedPage": {
+    "title":   "Compte archivé",
+    "message": "Il semble que votre compte ait été supprimé du collectif. Si vous pensez qu'il s'agit d'une erreur, veuillez contacter l'administrateur."
+  },
+  "changePasswordPage": {
+    "title":                    "Changer le mot de passe",
+    "currentPasswordLabel":     "Mot de passe actuel",
+    "newPasswordLabel":         "Nouveau mot de passe",
+    "submitButton":             "Mettre à jour",
+    "errorMessage":             "Erreur lors de la mise à jour"
+  },
+  "usersAdmin": {
+    "loading":           "Chargement des utilisateurs…",
+    "error":             "Erreur lors du chargement des utilisateurs.",
+    "title":             "Gestion des administrateurs",
+    "createSection": {
+      "heading":       "Créer un nouvel administrateur",
+      "usernameLabel": "Nom d’utilisateur",
+      "passwordLabel": "Mot de passe",
+      "roleLabel":     "Rôle",
+      "joinDateLabel": "Date d’adhésion",
+      "submitButton":  "Créer"
+    },
+    "table": {
+      "usernameHeader":    "Nom d’utilisateur",
+      "roleHeader":        "Rôle",
+      "permissionsHeader": "Autorisations",
+      "saveHeader":        "Enregistrer",
+      "deleteHeader":      "Supprimer"
+    },
+    "permissions": {
+      "events": "Événements"
+    },
+    "messages": {
+      "adminCreated":    "Administrateur créé !",
+      "errorCreating":   "Erreur lors de la création",
+      "saved":           "Enregistré !",
+      "errorSaving":     "Erreur",
+      "adminDeleted":    "Administrateur supprimé",
+      "deleteFailed":    "Échec de la suppression"
+    },
+    "confirm": {
+      "deleteAdmin":     "Supprimer cet administrateur ?"
+    }
+  },
+  "eventsAdmin": {
+    "title":               "Interface Événements",
+    "message": {
+      "created":           "Créé !",
+      "updated":           "Mis à jour !",
+      "deleted":           "Supprimé",
+      "error":             "Erreur",
+      "deleteFailed":      "Échec de la suppression",
+      "imageTooLarge":     "Image trop volumineuse : max 10 Mo."
+    },
+    "confirm": {
+      "deleteEvent":       "Supprimer cet événement ?"
+    },
+    "form": {
+      "createHeading":     "Créer un événement",
+      "editHeading":       "Modifier l’événement",
+      "labels": {
+        "title":           "Titre",
+        "date":            "Date",
+        "description":     "Description",
+        "imageFile":       "Fichier image"
+      },
+      "imageHelp":         "(laisser vide pour conserver l’actuel)",
+      "submit": {
+        "create":          "Créer",
+        "save":            "Enregistrer les modifications"
+      }
+    },
+    "existing": {
+      "heading":           "Événements existants",
+      "refreshing":        "(actualisation…)"
+    },
+    "actions": {
+      "edit":              "Modifier",
+      "delete":            "Supprimer"
+    }
+  },
+  "membersAdmin": {
+    "loadingList":         "Chargement des membres…",
+    "loadingSingle":       "Chargement du membre…",
+    "messages": {
+      "updated":           "Membre mis à jour !",
+      "deleted":           "Membre supprimé",
+      "errorUpdate":       "Échec de la mise à jour",
+      "errorDelete":       "Échec de la suppression"
+    },
+    "confirm": {
+      "deleteMember":     "Supprimer ce membre ?"
+    },
+    "list": {
+      "heading":          "Membres",
+      "refreshing":       "(actualisation…)"
+    },
+    "form": {
+      "editMember":       "Modifier le membre",
+      "editProfile":      "Modifier votre profil",
+      "labels": {
+        "name":                  "Nom",
+        "role":                  "Rôle artistique",
+        "genres":                "Genres",
+        "bio":                   "Bio",
+        "email":                 "E-mail",
+        "city":                  "Ville",
+        "country":               "Pays",
+        "instagram":             "URL Instagram",
+        "soundcloud":            "URL SoundCloud",
+        "spotify":               "URL Spotify",
+        "bandcamp":              "URL Bandcamp",
+        "profilePhoto":          "Photo de profil",
+        "portfolioLink":         "Lien du portfolio",
+        "portfolioDescription":  "Description du portfolio",
+        "portfolioImages":       "Images du portfolio (jusqu’à 10)"
+      },
+      "fieldsets": {
+        "soundcloudLegend":      "Intégrations SoundCloud (max 3)",
+        "spotifyLegend":         "Intégrations Spotify (max 3)",
+        "embedLabel":            "Intégration #{{count}}"
+      },
+      "submitButton":           "Enregistrer les modifications"
+    },
+    "actions": {
+      "edit":                 "Modifier",
+      "delete":               "Supprimer"
+    }
+  },
+  "memberDetailPage": {
+    "loading":             "Chargement du membre…",
+    "error":               "Erreur lors du chargement du membre.",
+    "editProfile":         "Modifier le profil",
+    "socials": {
+      "instagram":         "Instagram",
+      "soundcloud":        "SoundCloud",
+      "spotify":           "Spotify",
+      "bandcamp":          "Bandcamp"
+    },
+    "sections": {
+      "soundcloud":        "SoundCloud",
+      "spotify":           "Spotify",
+      "portfolio":         "Portfolio"
+    },
+    "portfolio": {
+      "viewWork":          "Voir le travail ↗"
+    },
+    "contact":             "Contacter {{name}}"
+  },
+  "contactForm": {
+    "status": {
+      "sent":             "Message envoyé !",
+      "failed":           "Échec de l’envoi."
+    },
+    "labels": {
+      "name":             "Votre nom",
+      "email":            "Votre e-mail",
+      "message":          "Message"
+    },
+    "button":              "Envoyer"
+  }
+}

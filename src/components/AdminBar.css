@@ -1,0 +1,7 @@
+/* src/components/AdminBar.css */
+
+.admin-bar {
+    background-color: var(--header-bg); /* flips with theme */
+    color: var(--header-fg);
+  }
+  

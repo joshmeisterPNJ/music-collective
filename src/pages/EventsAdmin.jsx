@@ -2,10 +2,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import './EventsAdmin.css';
 import { API_BASE_URL } from '../config';
 
 export default function EventsAdmin() {
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const [form, setForm] = useState({
     title: '',
@@ -16,7 +18,6 @@ export default function EventsAdmin() {
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState(null);
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-
 
   // Fetch & sort events: newest → oldest
   const {
@@ -43,7 +44,17 @@ export default function EventsAdmin() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      setMessage(
+        t(`eventsAdmin.message.${editingId ? 'updated' : 'created'}`)
+      );
+      setForm({ title: '', date: '', description: '' });
+      setFile(null);
+      setEditingId(null);
     },
+    onError: (err) =>
+      setMessage(
+        err.response?.data?.error || t('eventsAdmin.message.error')
+      ),
   });
 
   // Delete an event
@@ -51,7 +62,9 @@ export default function EventsAdmin() {
     mutationFn: (id) => axios.delete(`${API_BASE_URL}/api/events/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      setMessage(t('eventsAdmin.message.deleted'));
     },
+    onError: () => setMessage(t('eventsAdmin.message.deleteFailed')),
   });
 
   function handleChange(e) {
@@ -61,23 +74,21 @@ export default function EventsAdmin() {
   function handleFileChange(e) {
     const f = e.target.files[0] ?? null;
     if (f && f.size > MAX_FILE_SIZE) {
-      setMessage('Event image is too large. Max 10 MB.');
+      setMessage(t('eventsAdmin.message.imageTooLarge'));
       setFile(null);
-      e.target.value = '';          // clear the <input>
+      e.target.value = '';
       return;
     }
     setFile(f);
   }
-  
 
   function handleSubmit(e) {
     e.preventDefault();
     setMessage(null);
     if (file && file.size > MAX_FILE_SIZE) {
-      setMessage('Event image is too large. Max 10 MB.');
+      setMessage(t('eventsAdmin.message.imageTooLarge'));
       return;
     }
-    
 
     const data = new FormData();
     data.append('title', form.title);
@@ -90,20 +101,7 @@ export default function EventsAdmin() {
       ? `${API_BASE_URL}/api/events/${editingId}`
       : `${API_BASE_URL}/api/events`;
 
-    saveEvent.mutate(
-      { url, data, method },
-      {
-        onSuccess: () => {
-          setMessage(editingId ? 'Updated!' : 'Created!');
-          setForm({ title: '', date: '', description: '' });
-          setFile(null);
-          setEditingId(null);
-        },
-        onError: (err) => {
-          setMessage(err.response?.data?.error || 'Error');
-        },
-      }
-    );
+    saveEvent.mutate({ url, data, method });
   }
 
   function startEdit(evt) {
@@ -118,22 +116,23 @@ export default function EventsAdmin() {
   }
 
   function handleDelete(id) {
-    if (!confirm('Delete this event?')) return;
-    deleteEvent.mutate(id, {
-      onSuccess: () => setMessage('Deleted'),
-      onError: () => setMessage('Delete failed'),
-    });
+    if (!confirm(t('eventsAdmin.confirm.deleteEvent'))) return;
+    deleteEvent.mutate(id);
   }
 
   return (
     <div className="admin-page">
-      <h1>Events Admin</h1>
+      <h1>{t('eventsAdmin.title')}</h1>
       {message && <p className="admin-message">{message}</p>}
 
       <form className="admin-form" onSubmit={handleSubmit}>
-        <h2>{editingId ? 'Edit Event' : 'Create Event'}</h2>
+        <h2>
+          {editingId
+            ? t('eventsAdmin.form.editHeading')
+            : t('eventsAdmin.form.createHeading')}
+        </h2>
         <label>
-          Title
+          {t('eventsAdmin.form.labels.title')}
           <input
             name="title"
             value={form.title}
@@ -142,7 +141,7 @@ export default function EventsAdmin() {
           />
         </label>
         <label>
-          Date
+          {t('eventsAdmin.form.labels.date')}
           <input
             type="date"
             name="date"
@@ -152,7 +151,7 @@ export default function EventsAdmin() {
           />
         </label>
         <label>
-          Description
+          {t('eventsAdmin.form.labels.description')}
           <textarea
             name="description"
             value={form.description}
@@ -161,17 +160,25 @@ export default function EventsAdmin() {
           />
         </label>
         <label>
-          Image File {editingId ? '(leave blank to keep current)' : ''}
-          <input type="file" accept="image/*" onChange={handleFileChange} />
+          {t('eventsAdmin.form.labels.imageFile')}{' '}
+          {editingId && `(${t('eventsAdmin.form.imageHelp')})`}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+          />
         </label>
         <button type="submit">
-          {editingId ? 'Save Changes' : 'Create Event'}
+          {editingId
+            ? t('eventsAdmin.form.submit.save')
+            : t('eventsAdmin.form.submit.create')}
         </button>
       </form>
 
       <div className="admin-list">
         <h2>
-          Existing Events{listRefreshing ? ' (refreshing…)' : ''}
+          {t('eventsAdmin.existing.heading')}
+          {listRefreshing && ` ${t('eventsAdmin.existing.refreshing')}`}
         </h2>
         <ul>
           {events.map((evt) => (
@@ -182,12 +189,15 @@ export default function EventsAdmin() {
                 className="admin-thumb"
               />
               <span>
-                {evt.title} ({new Date(evt.date).toLocaleDateString()})
+                {evt.title}{' '}
+                ({new Date(evt.date).toLocaleDateString(i18n.language)})
               </span>
               <div className="admin-actions">
-                <button onClick={() => startEdit(evt)}>Edit</button>
+                <button onClick={() => startEdit(evt)}>
+                  {t('eventsAdmin.actions.edit')}
+                </button>
                 <button onClick={() => handleDelete(evt.id)}>
-                  Delete
+                  {t('eventsAdmin.actions.delete')}
                 </button>
               </div>
             </li>
