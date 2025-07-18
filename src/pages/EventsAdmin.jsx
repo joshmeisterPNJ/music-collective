@@ -1,18 +1,18 @@
 // src/pages/EventsAdmin.jsx
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
-import './EventsAdmin.css';
-import { API_BASE_URL } from '../config';
+import React, { useState } from "react";
+import axios from "axios";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import "./EventsAdmin.css";
+import { API_BASE_URL } from "../config";
 
 export default function EventsAdmin() {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const [form, setForm] = useState({
-    title: '',
-    date: '',
-    description: '',
+    title: "",
+    date: "",
+    description: "",
   });
   const [file, setFile] = useState(null);
   const [editingId, setEditingId] = useState(null);
@@ -20,16 +20,11 @@ export default function EventsAdmin() {
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
   // Fetch & sort events: newest → oldest
-  const {
-    data: events = [],
-    isFetching: listRefreshing,
-  } = useQuery({
-    queryKey: ['events'],
+  const { data: events = [], isFetching: listRefreshing } = useQuery({
+    queryKey: ["events"],
     queryFn: async () => {
       const res = await axios.get(`${API_BASE_URL}/api/events`);
-      return [...res.data].sort(
-        (a, b) => new Date(b.date) - new Date(a.date)
-      );
+      return [...res.data].sort((a, b) => new Date(b.date) - new Date(a.date));
     },
   });
 
@@ -40,31 +35,27 @@ export default function EventsAdmin() {
         url,
         data,
         method,
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { "Content-Type": "multipart/form-data" },
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events'] });
-      setMessage(
-        t(`eventsAdmin.message.${editingId ? 'updated' : 'created'}`)
-      );
-      setForm({ title: '', date: '', description: '' });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      setMessage(t(`eventsAdmin.message.${editingId ? "updated" : "created"}`));
+      setForm({ title: "", date: "", description: "" });
       setFile(null);
       setEditingId(null);
     },
     onError: (err) =>
-      setMessage(
-        err.response?.data?.error || t('eventsAdmin.message.error')
-      ),
+      setMessage(err.response?.data?.error || t("eventsAdmin.message.error")),
   });
 
   // Delete an event
   const deleteEvent = useMutation({
     mutationFn: (id) => axios.delete(`${API_BASE_URL}/api/events/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events'] });
-      setMessage(t('eventsAdmin.message.deleted'));
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      setMessage(t("eventsAdmin.message.deleted"));
     },
-    onError: () => setMessage(t('eventsAdmin.message.deleteFailed')),
+    onError: () => setMessage(t("eventsAdmin.message.deleteFailed")),
   });
 
   function handleChange(e) {
@@ -74,9 +65,9 @@ export default function EventsAdmin() {
   function handleFileChange(e) {
     const f = e.target.files[0] ?? null;
     if (f && f.size > MAX_FILE_SIZE) {
-      setMessage(t('eventsAdmin.message.imageTooLarge'));
+      setMessage(t("eventsAdmin.message.imageTooLarge"));
       setFile(null);
-      e.target.value = '';
+      e.target.value = "";
       return;
     }
     setFile(f);
@@ -86,17 +77,17 @@ export default function EventsAdmin() {
     e.preventDefault();
     setMessage(null);
     if (file && file.size > MAX_FILE_SIZE) {
-      setMessage(t('eventsAdmin.message.imageTooLarge'));
+      setMessage(t("eventsAdmin.message.imageTooLarge"));
       return;
     }
 
     const data = new FormData();
-    data.append('title', form.title);
-    data.append('date', form.date);
-    data.append('description', form.description);
-    if (file) data.append('image', file);
+    data.append("title", form.title);
+    data.append("date", form.date);
+    data.append("description", form.description);
+    if (file) data.append("image", file);
 
-    const method = editingId ? 'put' : 'post';
+    const method = editingId ? "put" : "post";
     const url = editingId
       ? `${API_BASE_URL}/api/events/${editingId}`
       : `${API_BASE_URL}/api/events`;
@@ -116,23 +107,23 @@ export default function EventsAdmin() {
   }
 
   function handleDelete(id) {
-    if (!confirm(t('eventsAdmin.confirm.deleteEvent'))) return;
+    if (!confirm(t("eventsAdmin.confirm.deleteEvent"))) return;
     deleteEvent.mutate(id);
   }
 
   return (
     <div className="admin-page">
-      <h1>{t('eventsAdmin.title')}</h1>
+      <h1>{t("eventsAdmin.title")}</h1>
       {message && <p className="admin-message">{message}</p>}
 
       <form className="admin-form" onSubmit={handleSubmit}>
         <h2>
           {editingId
-            ? t('eventsAdmin.form.editHeading')
-            : t('eventsAdmin.form.createHeading')}
+            ? t("eventsAdmin.form.editHeading")
+            : t("eventsAdmin.form.createHeading")}
         </h2>
         <label>
-          {t('eventsAdmin.form.labels.title')}
+          {t("eventsAdmin.form.labels.title")}
           <input
             name="title"
             value={form.title}
@@ -141,7 +132,7 @@ export default function EventsAdmin() {
           />
         </label>
         <label>
-          {t('eventsAdmin.form.labels.date')}
+          {t("eventsAdmin.form.labels.date")}
           <input
             type="date"
             name="date"
@@ -151,7 +142,7 @@ export default function EventsAdmin() {
           />
         </label>
         <label>
-          {t('eventsAdmin.form.labels.description')}
+          {t("eventsAdmin.form.labels.description")}
           <textarea
             name="description"
             value={form.description}
@@ -160,44 +151,41 @@ export default function EventsAdmin() {
           />
         </label>
         <label>
-          {t('eventsAdmin.form.labels.imageFile')}{' '}
-          {editingId && `(${t('eventsAdmin.form.imageHelp')})`}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-          />
+          {t("eventsAdmin.form.labels.imageFile")}{" "}
+          {editingId && `(${t("eventsAdmin.form.imageHelp")})`}
+          <input type="file" accept="image/*" onChange={handleFileChange} />
         </label>
         <button type="submit">
           {editingId
-            ? t('eventsAdmin.form.submit.save')
-            : t('eventsAdmin.form.submit.create')}
+            ? t("eventsAdmin.form.submit.save")
+            : t("eventsAdmin.form.submit.create")}
         </button>
       </form>
 
       <div className="admin-list">
         <h2>
-          {t('eventsAdmin.existing.heading')}
-          {listRefreshing && ` ${t('eventsAdmin.existing.refreshing')}`}
+          {t("eventsAdmin.existing.heading")}
+          {listRefreshing && ` ${t("eventsAdmin.existing.refreshing")}`}
         </h2>
         <ul>
           {events.map((evt) => (
             <li key={evt.id}>
-              <img
-                src={evt.image || '/assets/images/placeholder.JPG'}
-                alt={evt.title}
-                className="admin-thumb"
-              />
+              {evt.image ? (
+                <img src={evt.image} alt={evt.title} className="admin-thumb" />
+              ) : (
+                <div className="ph admin-thumb" aria-label="placeholder" />
+              )}
+
               <span>
-                {evt.title}{' '}
-                ({new Date(evt.date).toLocaleDateString(i18n.language)})
+                {evt.title} (
+                {new Date(evt.date).toLocaleDateString(i18n.language)})
               </span>
               <div className="admin-actions">
                 <button onClick={() => startEdit(evt)}>
-                  {t('eventsAdmin.actions.edit')}
+                  {t("eventsAdmin.actions.edit")}
                 </button>
                 <button onClick={() => handleDelete(evt.id)}>
-                  {t('eventsAdmin.actions.delete')}
+                  {t("eventsAdmin.actions.delete")}
                 </button>
               </div>
             </li>
